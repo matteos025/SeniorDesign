@@ -1,0 +1,105 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{Own}
+
+\tikzset{
+    block/.style = {draw, rectangle, 
+        minimum height=1cm, 
+        minimum width=2cm},
+    input/.style = {coordinate,node distance=1cm},
+    output/.style = {coordinate,node distance=2cm},
+    arrow/.style={draw, -latex,node distance=1cm},
+    pinstyle/.style = {pin edge={latex-, black,node distance=1cm}},
+    sum/.style = {draw, circle, node distance=1cm}
+}
+
+%opening
+\title{ESE 450 Design Document Draft 1}
+\author{Alexandre Amice,Sophia Moses, Sergio Roman, Matteo Sciolla}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Training a policy controller, whether with a human or through machine learning techniques is often a costly process. However, once this effort is expended, a good policy can effectively control a dynamic system from many states. However, in cases where the certain actuators in the system break, the original policy of the intelligent agent is no longer an effective strategy for controlling the system. In this project, we seek to design an intermediate controller which can map the actions of the original policy to a new set of actions which will control the damaged dynamic system to the same objective state as the original actions would under the original dynamics.
+\end{abstract}
+
+\section{Control by a rational agent with a good model}
+Consider the dynamic system and observation model which evolve according to
+\begin{align}
+ x_{k+1} = f(x_k, u_k) \label{dynamics}\\
+ y_k = g(x_k) \label{observation}
+\end{align}
+Denote by $\calS$ the set of possible states $x_k$ can assume, by $\calA$ the set of possible actions which can be input into the system, and by $\calO$ the set of possible observations.
+
+We consider the case of rational agent $\bfA$ who attempts to control the dynamic system in \eqref{dynamics} according to a control policy $\pi : \calO \rightarrow \calA$ towards some desired goal region $\calG \subseteq \calS$. Drawing inspiration from the work of \cite{Dragan2019}, we assume that the agent $\bfA$ maintains approximation functions $\tilde f$ and $\tilde g$ such that for $x_k \in \calT \subseteq \calS$ and $u_k \in \calP \subseteq \calA$, then
+\begin{align*}
+ \abs{\tilde f(x_k, u_k) - f(x_k,u_k) } \leq \varepsilon_f \\
+ \abs{\tilde g(x_k) - g(x_k)} \leq \varepsilon_g
+\end{align*}
+
+We call the sets $\calT$ and $\calP$ the nominal operating domains for the agent $\bfA$. The smaller $\varepsilon_f$ and $\varepsilon_g$, the better the approximation of the model. In other words, we assume that the agent $\bfA$ has a strong approximation to the dynamic system and observation model given in \eqref{dynamics} and \eqref{observation} within some bounded subregion of the state and action space. Therefore, we assume that the control policy $\pi$ is well suited for achieving the goal of the agent.
+
+
+\section{A sudden variation in dynamics}
+Consider a case where in the dynamics of the system in \eqref{dynamics} changes suddenly. In this we consider in particular the case where in certain actuators fail to perform correctly such as a single rotor in a quadrotor system suddenly jamming. Therefore, the dynamics of the system are no longer given by \eqref{dynamics}, but rather by:
+\begin{align}
+ x_{k+1} = F(x_k,u_k) \label{bad_dynamics}
+\end{align}
+
+
+We consider the same rational agent $\bfA$ introduced in the previous section with its control policy $\pi$ and its dynamic and observation approximation functions $\tilde f$ and $\tilde g$ attempting to control the dynamic system given in \eqref{bad_dynamics}. Due to the failure in actuation, it is no longer possible in general to assume that in the bounded regions $\calT$ and $\calP$, 
+$
+ \abs{\tilde f(x_k,u_k) - F(x_k,u_k)} \leq \varepsilon_f
+$.
+
+\section{Helping the agent maintain control}
+For an intelligent agent $\bfA$, say a human or a powerful neural network, then it is typically possible to relearn a policy say $\pi'$ in order to control the new dynamic system given in \eqref{bad_dynamics}. However, retraining is expensive and costly. Additionally, when the dynamics change due to issues in actuation, the system is often in a state that still needs to be controlled in spite of the lost actuation at least until it can come to a safe stopping point. In order to circumvent this retraining issue, we propose the following scheme leveraging the rationality of the agent as well as the slow speed in with which the agent will adjust its control input.
+
+Suppose that the failure in the system is such that there exists some function $a_{f,F}: \calS \times \calA \rightarrow \calA$, called an adjustment function, such that:
+\begin{align*} 
+ \abs{f(x_k, u_k) - F(x_k, a_{f,F}(x_k,u_k))} \leq \varepsilon_a
+\end{align*}
+for some states $x_k \in \calS_a \subseteq \calS$ and actions $u_k \in \calA_a \subseteq \calA$. Simply put, there exists some map $a_{f,F}$ which can remap inputs $u_k$ such that the output dynamics of the system are the same for some inputs and in some regions of the state space. We call the region $\calS_a \times \calA_a$ the adjustable region.
+
+Under this assumption, the agent $\bfA$ would have no need to change its control policy $\pi$ in the region $\calS_a \times \calA_a$. We therefore propose the following feedback model within the adjustable region
+\begin{figure}[H]
+ \begin{center}
+  \begin{tikzpicture}[auto, node distance=2cm,>=latex']
+         \node[block, name = policy] (policy) {$\pi(\cdot)$};
+         \node[block, right=of policy] (adjustment) {$a_{f,F}(\cdot, \cdot)$};
+         \node[block, right = of adjustment] (dynamics) {$F(\cdot, \cdot)$};
+         \node[block, below = of policy] (observation) {$g(\cdot)$};
+         \node[output, right  = of dynamics] (output) {$x_k$};
+         \coordinate[above = of adjustment] (above_adj);
+         \coordinate[above = of dynamics] (above_dyn);
+         \draw [->] (policy) -- node {$u_k$} (adjustment);
+         \draw [->] (adjustment) -- node {$a_{f,F}(x_k,u_k)$} (dynamics);
+         \draw [->] (dynamics) -- node [name = x_k] {$x_k$} (output);
+         \draw [->] (x_k) |-  (observation);
+         \draw [->] (x_k) |- (above_adj) -| (adjustment);
+         \draw [->] (x_k) |- (above_dyn) -| (dynamics);
+         \draw [->] (observation) -- node {$y_k$}  (policy);
+        \end{tikzpicture}
+ \end{center}
+\end{figure}
+
+\section{Senior Design Problem}
+
+We propose to use the above framework to help a human pilot fly a drone between two points. Suppose a human has learned to control a quadrotor robot using a a two joystick controller which can control the roll, pitch, yaw, and acceleration of the drone. The human is asked to fly the drone between two waypoints in space. Since the human is a rational agent who knows how to fly the drone, the human can easily manuever the drone between the two way points.
+
+Now suppose the human encounters a situation where one of the four rotors is jammed completely and cannot turn. The drone has lost acutation in the form of this rotor. We seek to design an adjustment function $a$ which allows the human to continue to fly the drone with minimal retraining by mapping the human's input decisions made under the control policy of the original dynamics of the system to new inputs mapped through $a$ which properly control the dynamics of the broken system.
+
+
+
+
+
+
+
+
+\bibliography{references.bib} 
+\bibliographystyle{ieeetr}
+
+
+\end{document}
