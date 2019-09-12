@@ -1,6 +1,8 @@
 import numpy as np
 import numpy.linalg as npl
 from abc import ABC, abstractmethod
+from sympy.solvers import solve
+from sympy import Symbol
 import json
 
 
@@ -214,8 +216,8 @@ class ReducedAttitudeDrone(Drone):
         :return:
         """
         scale_fact = self.kappa_tau * self.kappa_f / self.gamma
-        summed_spin = self.omega1_bar ** 2 - self.omega2_bar  ** 2 + \
-            self.omega3_bar  ** 2 - self.omega4_bar  ** 2
+        summed_spin = self.omega1_bar ** 2 - self.omega2_bar ** 2 + \
+            self.omega3_bar ** 2 - self.omega4_bar ** 2
         return scale_fact * summed_spin
 
     @property
@@ -317,6 +319,73 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
         # This is a tuning parameter
         self._rho = 0.5
 
+        nx_bar, ny_bar, nz_bar = Symbol(
+            'nx_bar', real=True), Symbol(
+            'ny_bar', real=True), Symbol(
+            'nz_bar', real=True)
+        p_bar, q_bar, r_bar = Symbol(
+            'p_bar', real=True), Symbol(
+            'q_bar', real=True), Symbol(
+            'r_bar', real=True)
+        eps = Symbol('eps', real=True)
+        omega1_bar, omega2_bar, omega3_bar, omega4_bar = Symbol(
+            'omega1_bar', real=True), Symbol(
+            'omega2_bar', real=True), Symbol(
+            'omega3_bar', real=True), Symbol(
+                'omega4_bar', real=True)
+
+        # variables = [omega1_bar, r_bar, q_bar]
+        # eq1 = self.kappa_f*self._rho * omega1_bar**2 * self.l - (self.IzzT-self.IxxT)*q_bar*r_bar - self.IzzP * q_bar * (2+self._rho) * omega1_bar**2
+        # eq2 = -self.gamma * r_bar + self.kappa_tau*self.kappa_f*(2-self._rho)*omega1_bar**2
+        # eq3 = r_bar/(q_bar**2+r_bar**2)**(1/2) * self.kappa_f * (2+self._rho) * omega1_bar**2 - 9.8 * self.mass
+        # equation = [eq1, eq2,eq3]
+        # sol = solve(equation, variables)
+
+        variables = [
+            nx_bar,
+            ny_bar,
+            nz_bar,
+            p_bar,
+            q_bar,
+            r_bar,
+            eps,
+            omega1_bar,
+            omega2_bar,
+            omega3_bar,
+            omega4_bar]
+
+        eq1 = self.kappa_f * (omega2_bar**2 - omega4_bar**2) * self.l - (self.IzzT - self.IxxT) * \
+            q_bar * r_bar - self.IzzP * q_bar * (omega1_bar + omega2_bar + omega3_bar + omega4_bar)
+        eq2 = self.kappa_f * (omega3_bar ** 2 - omega1_bar ** 2) * self.l + (self.IzzT - self.IxxT) * \
+            p_bar * r_bar + self.IzzP * p_bar * (omega1_bar + omega2_bar + omega3_bar + omega4_bar)
+        eq3 = -self.gamma * r_bar + self.kappa_tau * self.kappa_f * \
+            (omega1_bar**2 - omega2_bar**2 + omega3_bar ** 2 - omega4_bar**2)
+        eq4 = nx_bar - eps *  p_bar
+        eq5 = ny_bar - eps *  q_bar
+        eq6 = nz_bar - eps *  r_bar
+        eq7 = eps * (p_bar**2 + q_bar**2 + r_bar**2)**(1 / 2) - 1
+        eq8 = self.mass * 9.8 - nz_bar * self.kappa_f * \
+            (omega1_bar**2 + omega2_bar**2 + omega3_bar**2 + omega4_bar**2)
+        eq9 = omega2_bar**2 - self.rho * omega1_bar**2
+        eq10 = omega1_bar - omega3_bar
+        eq11 = omega4_bar
+        eq12 = p_bar
+
+        equations = [
+            eq1,
+            eq2,
+            eq3,
+            eq4,
+            eq5,
+            eq6,
+            eq7,
+            eq8,
+            eq9,
+            eq10,
+            eq11,
+            eq12
+            ]
+        sol = solve(equations, variables)
 
         self._p_bar = 0
 
@@ -335,8 +404,6 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
         # self._q_bar = self.kappa_f * \
         #     (self.omega2_bar ** 2 - self.omega4_bar ** 2) * self.l / factor
 
-
-
     @property
     def omega4(self):
         return 0
@@ -344,7 +411,8 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
     @omega4.setter
     def omega4(self, val):
         if val != 0:
-            raise Warning("Attempting to set rotor 4 angular speed to {}. This rotor is broken so this value is coerced to 0".format(val))
+            raise Warning(
+                "Attempting to set rotor 4 angular speed to {}. This rotor is broken so this value is coerced to 0".format(val))
 
     @property
     def p_bar(self):
