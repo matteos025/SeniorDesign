@@ -17,6 +17,7 @@ class Drone(ABC):
         self._IzzT = None  # kg * m^2
         self._IzzP = None  # kg * m^2
         self._IxxP = None  # kg * m^2
+        self.IxxB = 1      # Dummy Value
 
         # MASS
         self._mass = None  # kg
@@ -197,6 +198,29 @@ class Drone(ABC):
     def tau_drag_vect(self):
         return np.array([0, 0, self.tau_drag])
 
+    @property
+    def p_dot(self):
+        term1 = self.kappa_f * (np.square(self.omega2) -
+                                np.square(self.omega4)) * self.l
+        term2 = - (self.IzzT - self.IxxT) * self.q * self.r
+        term3 = - self.IzzP * self.q * \
+            (self.omega1 + self.omega2 + self.omega3 + self.omega4)
+        return term1 + term2 + term3
+
+    @property
+    def q_dot(self):
+        term1 = self.kappa_f * (np.square(self.omega3) -
+                                np.square(self.omega1)) * self.l
+        term2 = - (self.IzzT - self.IxxT) * self.p * self.r
+        term3 = - self.IzzP * self.p * \
+            (self.omega1 + self.omega2 + self.omega3 + self.omega4)
+        return (term1 + term2 + term3) / self.IxxB
+
+    @property
+    def r_dot(self):
+        return (-self.gamma * self.r + self.kappa_f * self.kappa_tau * \
+                (self.omega1**2 - self.omega2**2 + self.omega3**2 - self.omega4**2)) / self.IxxB
+
 
 class ReducedAttitudeDrone(Drone):
     @property
@@ -293,10 +317,11 @@ class MuellerDrone(Drone):
         super().__init__(initial_position,
                          initial_velocity,
                          initial_normal)
+
         # TOTAL MOMENTS
         self._IxxT = 3.2e-3  # kg * m^2
         self._IzzT = 5.5e-3  # kg * m^2
-        self._IzzP = 5.5e-3  # kg * m^2
+        self._IzzP = 1.5e-8  # kg * mm^2
         self._IxxP = 0  # kg * m^2
 
         # MASS
@@ -334,12 +359,15 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
             'omega3_bar', real=True), Symbol(
                 'omega4_bar', real=True)
 
-        # variables = [omega1_bar, r_bar, q_bar]
-        # eq1 = self.kappa_f*self._rho * omega1_bar**2 * self.l - (self.IzzT-self.IxxT)*q_bar*r_bar - self.IzzP * q_bar * (2+self._rho) * omega1_bar**2
-        # eq2 = -self.gamma * r_bar + self.kappa_tau*self.kappa_f*(2-self._rho)*omega1_bar**2
-        # eq3 = r_bar/(q_bar**2+r_bar**2)**(1/2) * self.kappa_f * (2+self._rho) * omega1_bar**2 - 9.8 * self.mass
-        # equation = [eq1, eq2,eq3]
-        # sol = solve(equation, variables)
+        variables = [omega1_bar, r_bar, q_bar]
+        eq1 = self.kappa_f * self.l* self.l* self._rho * omega1_bar**2 - \
+            (self.IzzT - self.IxxT) * q_bar * r_bar - self.IzzP * (2 + np.sqrt(self._rho)) * omega1_bar * q_bar
+        eq2 = -self.gamma * r_bar + self.kappa_tau * \
+            self.kappa_f * (2 - self._rho) * omega1_bar**2
+        eq3 = (r_bar * self.kappa_f * (2 + self._rho) *
+               omega1_bar**2)/(q_bar**2 + r_bar**2)**(1/2) - 9.8 * self.mass
+        equation = [eq1, eq2, eq3]
+        sol = solve(equation, variables)
 
         variables = [
             nx_bar,
@@ -352,7 +380,8 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
             omega1_bar,
             omega2_bar,
             omega3_bar,
-            omega4_bar]
+            omega4_bar
+        ]
 
         eq1 = self.kappa_f * (omega2_bar**2 - omega4_bar**2) * self.l - (self.IzzT - self.IxxT) * \
             q_bar * r_bar - self.IzzP * q_bar * (omega1_bar + omega2_bar + omega3_bar + omega4_bar)
@@ -360,10 +389,10 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
             p_bar * r_bar + self.IzzP * p_bar * (omega1_bar + omega2_bar + omega3_bar + omega4_bar)
         eq3 = -self.gamma * r_bar + self.kappa_tau * self.kappa_f * \
             (omega1_bar**2 - omega2_bar**2 + omega3_bar ** 2 - omega4_bar**2)
-        eq4 = nx_bar - eps *  p_bar
-        eq5 = ny_bar - eps *  q_bar
-        eq6 = nz_bar - eps *  r_bar
-        eq7 = eps * (p_bar**2 + q_bar**2 + r_bar**2)**(1 / 2) - 1
+        eq4 = nx_bar - eps * p_bar
+        eq5 = ny_bar - eps * q_bar
+        eq6 = nz_bar - eps * r_bar
+        eq7 = eps**2 * (p_bar**2 + q_bar**2 + r_bar**2) - 1
         eq8 = self.mass * 9.8 - nz_bar * self.kappa_f * \
             (omega1_bar**2 + omega2_bar**2 + omega3_bar**2 + omega4_bar**2)
         eq9 = omega2_bar**2 - self.rho * omega1_bar**2
@@ -384,7 +413,7 @@ class MuellerDrone3(MuellerDrone, ReducedAttitudeDrone):
             eq10,
             eq11,
             eq12
-            ]
+        ]
         sol = solve(equations, variables)
 
         self._p_bar = 0
