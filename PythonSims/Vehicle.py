@@ -1,12 +1,12 @@
 import numpy as np
 import numpy.linalg as npl
 
+
 class Car(object):
-    def __init__(self, initial_position = np.zeros(2), initial_velocity = np.zeros(2), initial_acceleration = np.zeros(2)):
+    def __init__(self, initial_position=np.zeros(2), initial_velocity=np.zeros(2), initial_acceleration=np.zeros(2)):
         self.pos = initial_position
         self.v = initial_velocity
         self.a = initial_acceleration
-
 
     @property
     def pos(self):
