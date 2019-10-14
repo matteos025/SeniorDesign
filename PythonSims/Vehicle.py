@@ -21,7 +21,8 @@ class Car(Vehicle):
             front_car,
             initial_position=np.zeros(2),
             initial_velocity=np.zeros(2),
-            initial_acceleration=np.zeros(2)):
+            initial_acceleration=np.zeros(2),
+            initial_heading = 0):
         self.controller = controller
         self.pos = initial_position
         self.v = initial_velocity
@@ -31,7 +32,7 @@ class Car(Vehicle):
         self.front_car = front_car
 
         # angle of the velocity of the center of mass (inertial heading)
-        self.psi = 0
+        self.psi = initial_heading
 
     @property
     def mass(self):
