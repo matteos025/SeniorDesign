@@ -2,19 +2,20 @@ import pygame
 from abc import ABC
 import time
 from Vehicle import Car
-from CarController import KeyBoardController
+from CarController import KeyBoardController, PlatoonController, CircularPlatoonController
 import numpy as np
+import numpy.linalg as npl
 
 
 class Vehicle_Visual(ABC):
-    def __init__(self, vehicle, screen):
+    def __init__(self, vehicle, screen, car_path):
         pygame.sprite.Sprite.__init__(self)
         self.screen = screen
         self.vehicle = vehicle
         self.width = 50
         self.length = 100
         self.originalImage = pygame.image.load(
-            "red_car.png").convert_alpha()
+            car_path).convert_alpha()
         self.originalImage = pygame.transform.scale(
             self.originalImage, (self.length, self.width))
         self.image = self.originalImage.copy()
@@ -38,18 +39,16 @@ class Vehicle_Visual(ABC):
              self.vehicle.pos[1] - h / 2))
 
 
-class CarCircleVisualizer(object):
-    def __init__(self, num_cars, screen):
+class CarCircleVisualizerPerfect(object):
+    def __init__(self, num_cars, screen, center):
         pygame.sprite.Sprite.__init__(self)
         initial_vel = np.array((200., 0))
-        controller = KeyBoardController()
-        self.center_of_circle = np.array(
-            (screen.get_width() / 2, screen.get_height() / 2))
+        self.center_of_circle = center
         self.radius = 200
 
         self.cars = [
             Car(
-                controller,
+                KeyBoardController(),
                 None,
                 None,
                 initial_position=self.center_of_circle +
@@ -78,7 +77,7 @@ class CarCircleVisualizer(object):
         self.cars_viz = [
             Vehicle_Visual(
                 self.cars[i],
-                screen) for i in range(num_cars)]
+                screen, "green_car.png" if i == 0 else "red_car.png") for i in range(num_cars)]
 
     def update(self, dt):
         for car in self.cars_viz:
@@ -87,20 +86,84 @@ class CarCircleVisualizer(object):
     def plot(self):
         for car in self.cars_viz:
             car.plot()
-        pygame.draw.circle(
-            screen, (0, 255, 0), (int(
-                self.center_of_circle[0]), int(
-                self.center_of_circle[1])), self.radius, 2)
+        #pygame.draw.circle(
+            # screen, (0, 255, 0), (int(
+            #     self.center_of_circle[0]), int(
+            #     self.center_of_circle[1])), self.radius, 2)
+
+class CarCircleVisualizerAccordian(object):
+    def __init__(self, num_cars, screen, center):
+        pygame.sprite.Sprite.__init__(self)
+        initial_vel = np.array((200., 0))
+        self.center_of_circle = center
+        self.radius = 200
+
+        self.cars = [
+            Car(
+                CircularPlatoonController(npl.norm(initial_vel),150, self.center_of_circle, self.radius, None),
+                None,
+                None,
+                initial_position=self.center_of_circle +
+                self.radius *
+                np.array(
+                    [
+                        np.cos(
+                            2 *
+                            np.pi *
+                            i /
+                            num_cars),
+                        np.sin(
+                            2 *
+                            np.pi *
+                            i /
+                            num_cars)]),
+                initial_heading=2 *
+                np.pi *
+                i /
+                (num_cars) +
+                np.pi /
+                2,
+                initial_velocity=initial_vel) for i in range(num_cars)]
+        for i in range(1,len(self.cars)):
+            car = self.cars[i]
+            car.steering_angle = 0.01
+            car.controller.next_car = self.cars[i-1]
+        self.cars[0].next_car = self.cars[-1]
+        self.cars[0].steering_angle = 0.01
+
+        self.cars_viz = [
+            Vehicle_Visual(
+                self.cars[i],
+                screen, "green_car.png" if i == 0 else "red_car.png") for i in range(num_cars)]
+
+    def update(self, dt):
+        for car in self.cars_viz:
+            car.update(dt)
+
+    def plot(self):
+        for car in self.cars_viz:
+            car.plot()
 
 
 if __name__ == '__main__':
+    num_cars = 8
     pygame.init()
     screen_width, screen_height = 1400, 900
     screen = pygame.display.set_mode(size=(screen_width, screen_height))
-    background = pygame.Surface(screen.get_size())
-    background.fill((0, 0, 0))
+
+    center_perfect = np.array(
+        (screen.get_width() / 4, screen.get_height() / 2))
+    center_accordian = np.array(
+        (3*screen.get_width() / 4, screen.get_height() / 2))
+
+
+
+    background_perfect = pygame.Surface(screen.get_size())
+    background_perfect.fill((0, 0, 0))
     dt = 0.1
-    circle = CarCircleVisualizer(6, screen)
+
+    circle_perfect = CarCircleVisualizerPerfect(num_cars, screen, center_perfect)
+    circle_accordian = CarCircleVisualizerAccordian(num_cars, screen, center_accordian)
 
     # loop til done
     done = False
@@ -109,8 +172,11 @@ if __name__ == '__main__':
 
     while not done:
         screen.fill((255, 255, 255))
-        circle.update(dt)
-        circle.plot()
+        circle_perfect.update(dt)
+        circle_perfect.plot()
+
+        circle_accordian.update(dt)
+        circle_accordian.plot()
 
         # --- Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
@@ -124,8 +190,8 @@ if __name__ == '__main__2':
     pygame.init()
     screen_width, screen_height = 1400, 900
     screen = pygame.display.set_mode(size=(screen_width, screen_height))
-    background = pygame.Surface(screen.get_size())
-    background.fill((0, 0, 0))
+    background_perfect = pygame.Surface(screen.get_size())
+    background_perfect.fill((0, 0, 0))
     dt = 0.1
 
     # loop til done

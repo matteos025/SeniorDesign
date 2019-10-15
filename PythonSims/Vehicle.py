@@ -1,6 +1,40 @@
 import numpy as np
 import numpy.linalg as npl
+from collections import OrderedDict
+from numbers import Number
 from abc import ABC, abstractmethod
+
+class State_Space(object):
+    def __init__(self, variable_dictionary):
+        # make sure that the state dictionary is an ordered dict
+        self.state_dictionary = variable_dictionary
+        self.state_size = {}
+        self.total_state_size = 0
+        for k in self.state_dictionary.keys():
+            if isinstance(self.state_dictionary[k], Number):
+                shape = 1
+            else:
+                shape = len(self.state_dictionary[k])
+            self.state_size[k] = shape
+            self.total_state_size += shape
+
+    def as_vector(self):
+        vector_state = np.zeros(self.total_state_size)
+        running_idx = 0
+        for k in self.state_dictionary.keys():
+            size_state = self.state_size[k]
+            vector_state[running_idx:running_idx+size_state] = self.state_dictionary[keys]
+            running_idx = running_idx+size_state
+        return vector_state
+
+    def __getitem__(self, item):
+        return self.state_dictionary[item]
+
+    def __setitem__(self, key, value):
+        self.state_dictionary[key] = value
+
+
+
 
 class Vehicle(ABC):
     # @abstractmethod
@@ -24,6 +58,15 @@ class Car(Vehicle):
             initial_acceleration=np.zeros(2),
             initial_heading = 0):
         self.controller = controller
+        states = OrderedDict()
+        states["pos"] = initial_position
+        states["v"] = initial_velocity
+        states["a"] = initial_acceleration
+        states["steering_angle"] = 0
+        states["heading"] = initial_heading
+        self.states = State_Space(states)
+
+
         self.pos = initial_position
         self.v = initial_velocity
         self.a = initial_acceleration
@@ -51,19 +94,19 @@ class Car(Vehicle):
 
     @property
     def pos(self):
-        return self._pos
+        return self.states['pos']
 
     @pos.setter
     def pos(self, val):
-        self._pos = val
+        self.states['pos'] = val
 
     @property
     def v(self):
-        return self._v
+        return self.states['v']
 
     @v.setter
     def v(self, val):
-        self._v = val
+        self.states['v'] = val
 
     @property
     def speed(self):
@@ -71,19 +114,29 @@ class Car(Vehicle):
 
     @property
     def a(self):
-        return self._a
+        return self.states['a']
 
     @a.setter
     def a(self, val):
-        self._a = val
+        self.states['a'] = val
+
 
     @property
     def psi(self):
-        return self._psi
+        #initertial heading
+        return self.states['heading']
 
     @psi.setter
     def psi(self, val):
-        self._psi = val
+        self.states['heading'] = val
+
+    @property
+    def heading(self):
+        return self.states['heading']
+
+    @heading.setter
+    def heading(self, val):
+        self.states['heading'] = val
 
     @property
     def beta(self):
@@ -112,11 +165,11 @@ class Car(Vehicle):
 
     @property
     def steering_angle(self):
-        return self._steering_angle
+        return self.states['steering_angle']
 
     @steering_angle.setter
     def steering_angle(self, val):
-        self._steering_angle = val
+        self.states['steering_angle'] = val
 
     @property
     def d_pos(self):
@@ -138,20 +191,15 @@ class Car(Vehicle):
         """
         :return: return state of this car
         """
-        return np.concatenate((self.pos, self.v, self.a, np.array([self.steering_angle])))
+        return self.states
 
-    @property
-    def chain_state(self):
-        """
-        :return: Return the state of the local chain as a 3 x len(state) matrix
-        """
-        return np.array((self.back_car.state, self.ego_state, self.front_car.state))
 
     def propogate(self, dt = 0.1):
         """
         Propogate the car forward in time. Uses linearization of derivatives so keep dt < 0.1
         :param dt: time to propogate forward
         """
+        self.input_control()
         self.pos += dt*self.d_pos
         self.psi += dt*self.d_psi
         self.v += dt*self.a
@@ -160,7 +208,7 @@ class Car(Vehicle):
         """
         Get an input from the controller
         """
-        (self.a, self.steering_angle) = self.controller.get_action(self.ego_state)
+        (self.a, self.steering_angle) = self.controller.get_action(self.states)
 
     def calc_vel(self):
         back_vel = self._back_car.v
