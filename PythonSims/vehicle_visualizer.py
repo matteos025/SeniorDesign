@@ -100,7 +100,7 @@ class CarCircleVisualizerAccordian(object):
 
         self.cars = [
             Car(
-                CircularPlatoonController(npl.norm(initial_vel),200, self.center_of_circle, self.radius, None),
+                CircularPlatoonController(npl.norm(initial_vel),150, self.center_of_circle, self.radius, None),
                 None,
                 None,
                 initial_position=self.center_of_circle +
@@ -146,7 +146,7 @@ class CarCircleVisualizerAccordian(object):
 
 
 if __name__ == '__main__':
-    num_cars = 6
+    num_cars = 8
     pygame.init()
     screen_width, screen_height = 1400, 900
     screen = pygame.display.set_mode(size=(screen_width, screen_height))
