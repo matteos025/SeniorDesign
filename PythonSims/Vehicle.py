@@ -54,8 +54,8 @@ class Car(Vehicle):
             back_car,
             front_car,
             initial_position=np.zeros(2),
-            initial_velocity=np.zeros(2),
-            initial_acceleration=np.zeros(2),
+            initial_velocity=0,
+            initial_acceleration=0,
             initial_heading = 0):
         self.controller = controller
         states = OrderedDict()
@@ -201,8 +201,11 @@ class Car(Vehicle):
         """
         self.input_control()
         self.pos += dt*self.d_pos
+        if np.isnan(self.pos[0]):
+            print()
         self.psi += dt*self.d_psi
         self.v += dt*self.a
+
 
     def input_control(self):
         """
@@ -210,13 +213,13 @@ class Car(Vehicle):
         """
         (self.a, self.steering_angle) = self.controller.get_action(self.states)
 
-    def calc_vel(self):
-        back_vel = self._back_car.v
-        back_acc = self._back_car.a
-        front_vel = self._front_car.v
-        front_acc = self._front_car.a
-        new_vel = self.controller.vel_calc(
-            self._v, back_vel, front_vel, self._a, back_acc, front_acc)
-        self.v(new_vel)
+    # def calc_vel(self):
+    #     back_vel = self._back_car.v
+    #     back_acc = self._back_car.a
+    #     front_vel = self._front_car.v
+    #     front_acc = self._front_car.a
+    #     new_vel = self.controller.vel_calc(
+    #         self._v, back_vel, front_vel, self._a, back_acc, front_acc)
+    #     self.v(new_vel)
 
 

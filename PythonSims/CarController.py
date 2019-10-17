@@ -93,19 +93,28 @@ class CircularPlatoonController(Controller):
             return system_state['a'], system_state['steering_angle']
 
         next_pos = self.next_car.pos
+        if np.isnan(next_pos[0]):
+            print()
+
         ego_pos = system_state["pos"]
         ego_acc = system_state['a']
         line_dist = npl.norm(next_pos-ego_pos)
 
-        angle = np.arccos(1-line_dist**2/(2*self.radius**2))
+        angle = np.arccos(np.clip(1-line_dist**2/(2*self.radius**2), -1, 1))
         dist = self.radius*angle
+
+        if dist <= 0:
+            system_state['v'] = 0
+            return 0, system_state['steering_angle']
 
         innov_pos = dist - self.desired_distance
 
-        unit_v = system_state['v']/npl.norm(system_state['v']+1e-17)
-        Kp = 0.25
+        Kp = 0.5
 
-        new_a = ego_acc + (Kp*innov_pos )*np.array(np.cos(system_state['heading']), np.sin(system_state['heading']))
+        new_a = (Kp*innov_pos)
+        print(innov_pos)
+        if np.isnan(np.any(system_state['v'])):
+            print()
 
         steering_angle = system_state['steering_angle']
         return new_a, steering_angle

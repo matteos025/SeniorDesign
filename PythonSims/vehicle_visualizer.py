@@ -42,7 +42,7 @@ class Vehicle_Visual(ABC):
 class CarCircleVisualizerPerfect(object):
     def __init__(self, num_cars, screen, center):
         pygame.sprite.Sprite.__init__(self)
-        initial_vel = np.array((200., 0))
+        initial_vel = 200.
         self.center_of_circle = center
         self.radius = 200
 
@@ -86,10 +86,7 @@ class CarCircleVisualizerPerfect(object):
     def plot(self):
         for car in self.cars_viz:
             car.plot()
-        #pygame.draw.circle(
-            # screen, (0, 255, 0), (int(
-            #     self.center_of_circle[0]), int(
-            #     self.center_of_circle[1])), self.radius, 2)
+
 
 class CarCircleVisualizerAccordian(object):
     def __init__(self, num_cars, screen, center):
@@ -137,12 +134,16 @@ class CarCircleVisualizerAccordian(object):
                 screen, "green_car.png" if i == 0 else "red_car.png") for i in range(num_cars)]
 
     def update(self, dt):
-        for car in self.cars_viz:
+        for i, car in enumerate(self.cars_viz):
             car.update(dt)
 
     def plot(self):
         for car in self.cars_viz:
             car.plot()
+        pygame.draw.circle(
+        screen, (0, 255, 0), (int(
+            self.center_of_circle[0]), int(
+            self.center_of_circle[1])), self.radius, 2)
 
 
 if __name__ == '__main__':
