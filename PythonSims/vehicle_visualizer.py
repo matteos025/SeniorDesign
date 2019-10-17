@@ -5,6 +5,7 @@ from Vehicle import Car
 from CarController import KeyBoardController, PlatoonController, CircularPlatoonController
 import numpy as np
 import numpy.linalg as npl
+import time
 
 
 class Vehicle_Visual(ABC):
@@ -145,7 +146,8 @@ class CarCircleVisualizerAccordian(object):
 
     def update(self, dt):
         for i, car in enumerate(self.cars_viz):
-            car.update(dt)
+            if np.random.rand(1) > 0.1:
+                car.update(dt)
 
     def plot(self):
         for car in self.cars_viz:
@@ -157,7 +159,7 @@ class CarCircleVisualizerAccordian(object):
 
 
 if __name__ == '__main__':
-    num_cars = 10
+    num_cars = 8
     pygame.init()
     screen_width, screen_height = 1400, 900
     screen = pygame.display.set_mode(size=(screen_width, screen_height))
@@ -173,30 +175,34 @@ if __name__ == '__main__':
     background_perfect.fill((0, 0, 0))
     dt = 0.01
 
-    circle_perfect = CarCircleVisualizerPerfect(num_cars, screen, center_perfect)
-    circle_accordian = CarCircleVisualizerAccordian(num_cars, screen, center_accordian)
+    while True:
+        start_time = time.time()
+        end_time = time.time()
+        circle_perfect = CarCircleVisualizerPerfect(num_cars, screen, center_perfect)
+        circle_accordian = CarCircleVisualizerAccordian(num_cars, screen, center_accordian)
 
-    # loop til done
-    done = False
+        # loop til done
+        done = False
 
-    clock = pygame.time.Clock()
+        clock = pygame.time.Clock()
 
-    while not done:
-        screen.fill((255, 255, 255))
-        for i in range(0,10):
-            circle_perfect.update(dt)
+        while int(end_time - start_time) < 30:
+            screen.fill((255, 255, 255))
+            for i in range(0,10):
+                circle_perfect.update(dt)
 
-            circle_accordian.update(dt)
+                circle_accordian.update(dt)
 
-        circle_perfect.plot()
-        circle_accordian.plot()
+            circle_perfect.plot()
+            circle_accordian.plot()
 
-        # --- Go ahead and update the screen with what we've drawn.
-        pygame.display.flip()
+            # --- Go ahead and update the screen with what we've drawn.
+            pygame.display.flip()
 
-        # --- Limit to 60 frames per second
-        rate = 10
-        clock.tick(rate)
+            # --- Limit to 60 frames per second
+            rate = 10
+            clock.tick(rate)
+            end_time = time.time()
 
 
 if __name__ == '__main__2':
