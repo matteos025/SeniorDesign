@@ -23,7 +23,7 @@ class State_Space(object):
         running_idx = 0
         for k in self.state_dictionary.keys():
             size_state = self.state_size[k]
-            vector_state[running_idx:running_idx+size_state] = self.state_dictionary[keys]
+            vector_state[running_idx:running_idx+size_state] = self.state_dictionary[k]
             running_idx = running_idx+size_state
         return vector_state
 
