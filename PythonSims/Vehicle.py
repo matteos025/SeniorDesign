@@ -4,6 +4,7 @@ from collections import OrderedDict
 from numbers import Number
 from abc import ABC, abstractmethod
 
+
 class State_Space(object):
     def __init__(self, variable_dictionary):
         # make sure that the state dictionary is an ordered dict
