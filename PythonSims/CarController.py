@@ -104,8 +104,6 @@ class CircularPlatoonController(Controller):
         if angle < 0.5:
             system_state['v'] = system_state['v']/2
 
-
-
         innov_pos = dist - self.desired_distance
 
         # print("innov pos: {}".format(innov_pos))
