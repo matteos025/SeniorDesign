@@ -48,8 +48,7 @@ class Vehicle(object):
         return message
 
     def _prepare_thread(self, target, name = None):
-        t = threading.Thread(target=target, name = name)
-        t.setDaemon(True)
+        t = threading.Thread(target=target, name = name, daemon=True)
         return t
 
     def _network_publish_thread(self):

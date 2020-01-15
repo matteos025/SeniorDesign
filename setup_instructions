@@ -1,0 +1,18 @@
+When setting up the Raspberry Pi:
+clone the repository to the Desktop folder
+
+run the command:
+sudo nano /etc/rc.local
+
+and then paste:
+cd Desktop/SeniorDesign
+git pull
+pip install -r requirements.txt
+
+to the end of the file to enable automatic pulling of the code base
+
+Next, create a file called LOCAL_CONSTANTS.py in RaspberryPiController folder. Copy over the contents of LOCAL_CONSTANTS_SAMPLE.py and
+modify the appropriate constants.
+
+To launch the vehicle, from the RaspberryPiController folder run:
+python3 vehicle.py
