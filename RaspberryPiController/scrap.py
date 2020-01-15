@@ -38,7 +38,7 @@ class NetworkPublisherThread(threading.Thread):
     def run(self):
         while True:
             # TODO make this send useful messages
-            self.network_publisher.send_message()
+            self.network_publisher.send_string()
             time.sleep(0.1)
 ########################################################################################################################
 # END NETWORK PUBLISHER THREAD

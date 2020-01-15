@@ -11,10 +11,12 @@ class Controller(ABC):
             steering_angle=0,
             velocity=0,
             communicate_to_arduino=True):
-        self.ego_velocity = velocity
-        self.ego_steering_angle = steering_angle
         self.communicate_to_arduino = communicate_to_arduino
         self.arduino_communicator = ArduinoCommunicator() if self.communicate_to_arduino else None
+
+        self.ego_velocity = velocity
+        self.ego_steering_angle = steering_angle
+
 
     @property
     def ego_velocity(self):
@@ -52,7 +54,7 @@ class Controller(ABC):
             self.set_velocity()
             self.set_steering_angle()
             if ctr % 10 == 0:
-                logging.debug("Velocity: {} \n Steering Angle: {}\n".format(self.ego_velocity, self.ego_steering_angle))
+                # logging.debug("Velocity: {} \n Steering Angle: {}\n".format(self.ego_velocity, self.ego_steering_angle))
                 ctr = 0
             ctr += 1
             time.sleep(0.1)
@@ -82,3 +84,9 @@ class PlatoonControllerABC(Controller, ABC):
     @property
     def velocity_error(self):
         return self.leader_velocity-self.ego_velocity
+
+    @property
+    @abstractmethod
+    def state(self):
+        pass
+

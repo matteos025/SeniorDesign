@@ -37,17 +37,22 @@ class PlatoonController(PlatoonControllerABC):
 
         self.cost = spl.block_diag(self.state_cost, self.input_cost)
 
+        self.prediction_horizon = 4
+
         #TODO compute optimal inputs and store them
         self.optimal_inputs_table = None
         self.current_optimal_velocity= 0
         self.current_optimal_steering_angle = 0
+
+    @property
+    def state(self):
+        return np.array([self.leader_velocity, self.distance_error, self.ego_velocity, self.current_optimal_velocity])
 
     def set_velocity(self):
         self.ego_velocity = self.current_optimal_velocity
 
     def set_steering_angle(self):
         self.ego_steering_angle = self.current_optimal_steering_angle
-
 
     def compute_optimal_input(self, look_up = True):
         """
@@ -57,6 +62,10 @@ class PlatoonController(PlatoonControllerABC):
         """
         self.current_optimal_velocity = 0
         self.current_optimal_steering_angle = 0
+
+    def _finite_horizon_optimal_input(self):
+        #TODO
+        pass
 
     def compute_mpt(self, file_to_save):
         """

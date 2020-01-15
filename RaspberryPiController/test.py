@@ -1,22 +1,14 @@
-import RaspberryPiController.NetworkCommunicator as NetworkCommunicator
+import NetworkCommunicator as NetworkCommunicator
 import threading
 import time
 
-publisher = NetworkCommunicator.NetworkPublisher()
-reader = NetworkCommunicator.NetworkReader()
+class super_class(object):
+    def __init__(self):
+        print("init called")
 
-class ReaderThread(threading.Thread):
-    def run(self):
-        reader.run()
+class sub_class(super_class):
+    def foo(self):
+        print("foo")
 
-readerThread = ReaderThread()
-readerThread.setDaemon(True)
-readerThread.start()
-
-for i in range(0, 10):
-    message = "Message number {}".format(i)
-    publisher.send_message(message)
-    time.sleep(0.1)
-
-
-
+super_class_obj = super_class()
+sub_class_obj = sub_class()

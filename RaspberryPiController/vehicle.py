@@ -1,5 +1,6 @@
 import threading
 from CONSTANTS import *
+from LOCAL_CONSTANTS import *
 from NetworkCommunicator import NetworkReader, NetworkPublisher
 from Controllers import *
 import warnings
@@ -14,104 +15,73 @@ import logging
 ########################################################################################################################
 class Vehicle(object):
     def __init__(self, controller_type, **kwargs):
-        #network publisher
-        start = time.time()
-        ip_to_publish = kwargs['ip_to_publish'] if 'ip_to_publish' in kwargs else DEFAULT_IP
-        self.network_publisher = NetworkPublisher(ip_to_publish)
-        self.network_publisher_thread = NetworkPublisherThread(self.network_publisher)
-        # self.network_publisher_thread.start()
-        end = time.time()
-        logging.debug("Network Publisher Launched in {}s".format(end-start))
-
-        #network reader
-        start = time.time()
-        ip_to_read = kwargs['ip_to_read'] if 'ip_to_read' in kwargs else DEFAULT_IP
-        self.network_reader = NetworkReader(ip_to_read)
-        self.network_reader_thread = NetworkReaderThread(self.network_reader)
-        # self.network_reader_thread.start()
-        end = time.time()
-        logging.debug("Network Reader Launched in {}s".format(end - start))
-
-        #vehicle controller
-        start = time.time()
+        # vehicle controller
         controller_constructor = CONTROL_SCHEME_DICT[controller_type]
         steering_angle = kwargs['steering_angle'] if 'steering_angle' in kwargs else 0
         velocity = kwargs['velocity'] if 'velocity' in kwargs else 0
-        self.controller = controller_constructor(steering_angle, velocity, communicate_to_arduino = False)
-        self.control_thread = ControlThread(self.controller)
-        self.control_thread.run()
-        end = time.time()
-        logging.debug("Controller Launched in {}s".format(end - start))
+        self.controller = controller_constructor(steering_angle, velocity, communicate_to_arduino=False)
+
+        self.do_networking = kwargs['do_networking'] if 'do_networking' in kwargs else True
+
+        #network publisher
+        ip_to_publish = kwargs['ip_to_publish'] if 'ip_to_publish' in kwargs else DEFAULT_IP
+        self.network_publisher = NetworkPublisher(ip_to_publish)
+        self.network_publisher_thread = self._prepare_thread(target=self._network_publish_thread, name = 'network_publisher')
+
+        #network reader
+        ip_to_read = kwargs['ip_to_read'] if 'ip_to_read' in kwargs else DEFAULT_IP
+        self.network_reader = NetworkReader(ip_to_read)
+        self.network_read_thread = self._prepare_thread(target=self._network_read_thread, name = 'network_reader')
+
+
+    @property
+    def ego_velocity(self):
+        return self.controller.ego_velocity
+
+    @property
+    def ego_steering_angle(self):
+        return self.controller.ego_steering_angle
+
+    @property
+    def state_message_dictionary(self):
+        message = {'velocity': str(self.ego_velocity), 'steering_angle': str(self.ego_steering_angle)}
+        return message
+
+    def _prepare_thread(self, target, name = None):
+        t = threading.Thread(target=target, name = name)
+        t.setDaemon(True)
+        return t
+
+    def _network_publish_thread(self):
+        while True:
+            self.network_publisher.send_dictionary(self.state_message_dictionary)
+            time.sleep(0.5)
+
+    def _network_read_thread(self):
+        while True:
+            logging.debug("reading")
+            self.network_reader.read()
+            time.sleep(0.5)
+
+    def start(self):
+        if self.do_networking:
+            self.network_publisher_thread.start()
+            self.network_read_thread.start()
+        self.controller.run()
+        while True:
+            pass
+
+
 
 
 ########################################################################################################################
 # END VEHICLE OBJECT
 ########################################################################################################################
 
-
-
-########################################################################################################################
-# START NETWORK PUBLISHER THREAD
-########################################################################################################################
-class NetworkPublisherThread(threading.Thread):
-    """
-    Network Publisher Thread for UDP Communication To Other Cars
-    """
-    def __init__(self, network_publisher):
-        super().__init__(name = 'network_publisher')
-        self.network_publisher = network_publisher
-        self.setDaemon(True)
-
-    def run(self):
-        ctr = 0
-        while True:
-            # TODO make this send useful messages
-            self.network_publisher.send_message()
-            time.sleep(0.1)
-            ctr += 1
-########################################################################################################################
-# END NETWORK PUBLISHER THREAD
-########################################################################################################################
-
-########################################################################################################################
-# START NETWORK READER THREAD
-########################################################################################################################
-class NetworkReaderThread(threading.Thread):
-    """
-    Network Reader Thread for UDP Communication To Other Cars
-    """
-    def __init__(self, network_reader):
-        super().__init__(name = 'network_reader')
-        self.network_reader = network_reader
-        self.setDaemon(True)
-
-    def run(self):
-        self.network_reader.run()
-########################################################################################################################
-# END NETWORK READER THREAD
-########################################################################################################################
-
-########################################################################################################################
-# START CONTROL THREAD
-########################################################################################################################
-class ControlThread(threading.Thread):
-    """
-    Network Reader Thread for UDP Communication To Other Cars
-    """
-    def __init__(self, controller):
-        super().__init__(name = 'controller')
-        self.setDaemon(True)
-        self.controller = controller
-
-    def run(self):
-        self.controller.run()
-
-########################################################################################################################
-# END NETWORK READER THREAD
-########################################################################################################################
-
-
-
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    vehicle = Vehicle('keyboard')
+    logging.basicConfig(format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                        datefmt='%Y-%m-%d:%H:%M:%S',
+                        level=logging.DEBUG)
+    vehicle = Vehicle('keyboard', do_networking= True, ip_to_publish=PUBLISHING_IP, ip_to_read=READING_IP)
+    # vehicle = Vehicle('keyboard', do_networking= True)
+    vehicle.start()
