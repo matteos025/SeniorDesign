@@ -35,11 +35,5 @@ class ArduinoCommunicator:
             self.bus.write_i2c_block_data(self.address, register, data)
             self.write_attempt = 0
         except Exception as e:
-            self.write_attempt += 1
-            if self.write_attempt < timeout:
-                print("Failed to write due to Exception " + str(e) + ". Trying again")
-                self._write(register, data)
-            else:
-                print("Timed out writing")
-                traceback.print_exc()
+            traceback.print_exc()
 
