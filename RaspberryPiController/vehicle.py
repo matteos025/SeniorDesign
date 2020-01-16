@@ -30,14 +30,15 @@ class Vehicle(object):
         self.do_networking = kwargs['do_networking'] if 'do_networking' in kwargs else True
 
         #network publisher
-        ip_to_publish = kwargs['ip_to_publish'] if 'ip_to_publish' in kwargs else DEFAULT_IP
-        self.network_publisher = NetworkPublisher(ip_to_publish)
-        self.network_publisher_thread = self._prepare_thread(target=self._network_publish_thread, name = 'network_publisher')
+        if self.do_networking:
+            ip_to_publish = kwargs['ip_to_publish'] if 'ip_to_publish' in kwargs else DEFAULT_IP
+            self.network_publisher = NetworkPublisher(ip_to_publish)
+            self.network_publisher_thread = self._prepare_thread(target=self._network_publish_thread, name = 'network_publisher')
 
-        #network reader
-        ip_to_read = kwargs['ip_to_read'] if 'ip_to_read' in kwargs else DEFAULT_IP
-        self.network_reader = NetworkReader(ip_to_read)
-        self.network_read_thread = self._prepare_thread(target=self._network_read_thread, name = 'network_reader')
+            #network reader
+            ip_to_read = kwargs['ip_to_read'] if 'ip_to_read' in kwargs else DEFAULT_IP
+            self.network_reader = NetworkReader(ip_to_read)
+            self.network_read_thread = self._prepare_thread(target=self._network_read_thread, name = 'network_reader')
 
 
     @property
@@ -87,6 +88,6 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
-    vehicle = Vehicle('keyboard', do_networking= True, ip_to_publish=PUBLISHING_IP, ip_to_read=READING_IP)
+    vehicle = Vehicle('keyboard', do_networking= DO_NETWORKING, ip_to_publish=PUBLISHING_IP, ip_to_read=READING_IP)
     # vehicle = Vehicle('keyboard', do_networking= True)
     vehicle.start()
