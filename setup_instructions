@@ -7,7 +7,7 @@ sudo nano /etc/rc.local
 and then paste:
 cd Desktop/SeniorDesign
 git pull
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 to the end of the file to enable automatic pulling of the code base
 
@@ -16,3 +16,5 @@ modify the appropriate constants.
 
 To launch the vehicle, from the RaspberryPiController folder run:
 python3 vehicle.py
+
+IF YOU DOWNLOAD A LIBRARY PLEASE ADD IT TO requirements.txt

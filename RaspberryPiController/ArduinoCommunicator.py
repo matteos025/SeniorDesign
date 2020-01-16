@@ -1,5 +1,7 @@
 from smbus import SMBus
 import traceback
+from CONSTANTS import *
+from LOCAL_CONSTANTS import *
 
 
 class ArduinoCommunicator:

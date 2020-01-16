@@ -4,7 +4,6 @@ from CONSTANTS import *
 import time
 import logging
 
-
 class Controller(ABC):
     def __init__(
             self,

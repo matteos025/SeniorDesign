@@ -2,10 +2,12 @@ import threading
 from CONSTANTS import *
 from LOCAL_CONSTANTS import *
 from NetworkCommunicator import NetworkReader, NetworkPublisher
-from Controllers import *
+# from Controllers import *
+import Controllers.KeyboardController as KeyboardController
+import Controllers.PlatoonController as PlatoonController
 import warnings
 import time
-import cv2
+#import cv2
 from threading import Lock
 import numpy as np
 import logging
@@ -13,13 +15,17 @@ import logging
 ########################################################################################################################
 # START VEHICLE OBJECT
 ########################################################################################################################
+#Control Scheme Constants
+CONTROL_SCHEME_DICT = {'keyboard': KeyboardController.KeyboardController,
+                       'platoon_follower': PlatoonController.PlatoonController}
+
 class Vehicle(object):
     def __init__(self, controller_type, **kwargs):
         # vehicle controller
         controller_constructor = CONTROL_SCHEME_DICT[controller_type]
         steering_angle = kwargs['steering_angle'] if 'steering_angle' in kwargs else 0
         velocity = kwargs['velocity'] if 'velocity' in kwargs else 0
-        self.controller = controller_constructor(steering_angle, velocity, communicate_to_arduino=False)
+        self.controller = controller_constructor(steering_angle, velocity, communicate_to_arduino=COMMUNICATE_TO_ARDUINO)
 
         self.do_networking = kwargs['do_networking'] if 'do_networking' in kwargs else True
 
