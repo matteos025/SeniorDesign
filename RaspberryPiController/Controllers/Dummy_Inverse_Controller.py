@@ -1,6 +1,6 @@
 from CONSTANTS import *
 from Controllers.ControllerABC import CommunicatingControllerABC
-
+import logging
 
 class InverseController(CommunicatingControllerABC):
     def __init__(
@@ -23,7 +23,7 @@ class InverseController(CommunicatingControllerABC):
 
     #do nothing because this is a slave
     def set_steering_angle(self):
-        pass
+        logging.debug("Steering Angle is {}".format(self.ego_steering_angle))
 
     #do nothing because this is a slave
     def set_velocity(self):
