@@ -56,7 +56,7 @@ class Controller(ABC):
                 # logging.debug("Velocity: {} \n Steering Angle: {}\n".format(self.ego_velocity, self.ego_steering_angle))
                 ctr = 0
             ctr += 1
-            time.sleep(1)
+            time.sleep(0.1)
 
 
 class PlatoonControllerABC(Controller, ABC):
@@ -88,4 +88,5 @@ class PlatoonControllerABC(Controller, ABC):
     @abstractmethod
     def state(self):
         pass
+
 

@@ -3,6 +3,7 @@ import keyboard
 import numpy as np
 import logging
 
+
 class KeyboardController(Controller):
     def set_velocity(self):
         if keyboard.is_pressed('up'):
@@ -17,5 +18,7 @@ class KeyboardController(Controller):
             self.ego_steering_angle += incr
         elif keyboard.is_pressed('left'):
             self.ego_steering_angle -= incr
-        self.ego_velocity = np.clip(self.ego_velocity, -200, 200)   
         logging.debug("Steering Angle is {}".format(self.ego_steering_angle))
+
+
+

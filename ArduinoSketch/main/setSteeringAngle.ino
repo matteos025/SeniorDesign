@@ -1,14 +1,15 @@
-float setSteeringAngle(float val)
+float setSteeringAngle(float angle)
 {
-  static int ctr = 0;
-  float bound = 25;
-  float servoAngleDeg = constrain(SERVOANGLENEUT - val, -SERVOANGLENEUT-bound, SERVOANGLENEUT+bound);
-  steeringServo.write(servoAngleDeg);
-  if(ctr % 100000 == 0)
-  {
-    Serial.print("Steering Angle is ");
-    Serial.println(servoAngleDeg);
-  }
-  ctr++;
-  return servoAngleDeg;
+  float bound = 30;
+  float servoCommand = angleToServoCommand(angle);
+  servoCommand = constrain(servoCommand, -SERVOANGLENEUT-bound, SERVOANGLENEUT+bound);
+  steeringServo.write(servoCommand);
+  Serial.print("Steering Angle is ");
+  Serial.println(angle);
+  return angle;
+}
+
+float angleToServoCommand(float angle)
+{
+  return SERVOANGLENEUT-angle;
 }

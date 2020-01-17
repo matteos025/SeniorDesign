@@ -13,8 +13,8 @@ class ArduinoCommunicator:
         self.UPDATE_SEND_REGISTER = 11
 
         self.data_to_arduino_register = {
-            "velocity": 1,
-            "steering_angle": 2
+            "velocity": VELOCITY_REGISTER,
+            "steering_angle": STEERING_ANGLE_REGISTER
         }
 
         self.SIZE_OF_ARDUINO_SEND_REGISTERS = 8
@@ -36,4 +36,5 @@ class ArduinoCommunicator:
             self.write_attempt = 0
         except Exception as e:
             traceback.print_exc()
+
 

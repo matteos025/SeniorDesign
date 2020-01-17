@@ -63,9 +63,14 @@ void setup() {
 }
 
 
-// This function is looped continuously. After calling setup, Arduino essentially runs while(True){ loop(); }
+// This function is looped continuously. 
 void loop() {
-  // for now do nothing
+  unsigned long time = millis();
   setSpeed(receive_registers[VELOCITY_REGISTER]);
   setSteeringAngle(receive_registers[STEERING_ANGLE_REGISTER]);
+
+  int DELAY = 20; //amount we wish to delay in miliseconds
+  while(millis() <= time + DELAY){
+        
+  }
 }
