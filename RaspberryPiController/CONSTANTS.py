@@ -5,7 +5,7 @@ ENCODING = "utf-8"
 DEFAULT_IP = '127.0.0.1'
 
 
-CONTROL_SAMPLING_TIME = 0.1
+CONTROL_SAMPLING_TIME = 0.1 #seconds
 
 #Arduino Communication Constants
 VELOCITY_REGISTER = 1

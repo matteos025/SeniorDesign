@@ -25,9 +25,12 @@ class Vehicle(object):
         controller_constructor = CONTROL_SCHEME_DICT[controller_type]
         steering_angle = kwargs['steering_angle'] if 'steering_angle' in kwargs else 0
         velocity = kwargs['velocity'] if 'velocity' in kwargs else 0
-        self.controller = controller_constructor(steering_angle, velocity, communicate_to_arduino=COMMUNICATE_TO_ARDUINO)
 
         self.do_networking = kwargs['do_networking'] if 'do_networking' in kwargs else True
+        self.do_control = kwargs['do_control'] if 'do_control' in kwargs else True
+        self.communicate_to_arduino = kwargs['communicate_to_arduino'] if 'communicate_to_arduino' in kwargs else True
+
+        self.controller = controller_constructor(steering_angle, velocity, communicate_to_arduino=self.communicate_to_arduino)
 
         #network publisher
         if self.do_networking:
@@ -73,9 +76,10 @@ class Vehicle(object):
         if self.do_networking:
             self.network_publisher_thread.start()
             self.network_read_thread.start()
-        self.controller.run()
+        if self.do_control:
+            self.controller.run()
         while True:
-            pass
+            print("Looping")
 
 
 
@@ -88,6 +92,7 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
-    vehicle = Vehicle('keyboard', do_networking= DO_NETWORKING, ip_to_publish=PUBLISHING_IP, ip_to_read=READING_IP)
+    vehicle = Vehicle(controller_type='keyboard', do_control=DO_CONTROL, communicate_to_arduino=COMMUNICATE_TO_ARDUINO,
+                      do_networking= DO_NETWORKING, ip_to_publish=PUBLISHING_IP, ip_to_read=READING_IP)
     # vehicle = Vehicle('keyboard', do_networking= True)
     vehicle.start()

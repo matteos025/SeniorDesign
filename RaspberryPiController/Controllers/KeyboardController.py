@@ -13,7 +13,7 @@ class KeyboardController(Controller):
         self.ego_velocity = np.clip(self.ego_velocity, 0, 255)
 
     def set_steering_angle(self):
-        incr = 10
+        incr = 1
         if keyboard.is_pressed('right'):
             self.ego_steering_angle += incr
         elif keyboard.is_pressed('left'):

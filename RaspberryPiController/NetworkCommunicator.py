@@ -17,15 +17,6 @@ class NetworkPublisher(object):
     def send_string(self, message ="Hello, World!"):
         self.socket.sendto(message.encode(ENCODING), (self.UDP_IP_RECIPIENT, self.UDP_PORT_RECIPIENT))
 
-    def run(self, message_dictionary):
-        #TODO fill in to what we want
-        ctr = 0
-        while True:
-            message = {'velocity': ctr, 'steering_angle': ctr}
-            self.send_dictionary(message_dictionary)
-            # time.sleep(0.1)
-            ctr += 1
-
 class NetworkReader(object):
     def __init__(self, ip_to_read = None):
         self.UDP_IP = DEFAULT_IP if ip_to_read is None else ip_to_read
