@@ -1,10 +1,10 @@
-from Controllers.ControllerABC import ControllerABC
+from Controllers.ControllerABC import CommunicatingControllerABC
 import keyboard
 import numpy as np
 import logging
 
 
-class KeyboardController(ControllerABC):
+class KeyboardController(CommunicatingControllerABC):
     def set_velocity(self):
         if keyboard.is_pressed('up'):
             self.ego_velocity += 1
@@ -20,5 +20,6 @@ class KeyboardController(ControllerABC):
             self.ego_steering_angle -= incr
         logging.debug("Steering Angle is {}".format(self.ego_steering_angle))
 
-
+    def receive_message(self, message):
+        pass
 

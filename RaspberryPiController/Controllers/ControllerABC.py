@@ -58,12 +58,12 @@ class ControllerABC(ABC):
             ctr += 1
             time.sleep(CONTROL_SAMPLING_TIME)
 
-class CommunicatingControllerABC(ControllerABC, ABC):
+class CommunicatingControllerABC(ControllerABC):
     @abstractmethod
     def receive_message(self, message):
         pass
 
-class PlatoonControllerABC(CommunicatingControllerABC, ControllerABC, ABC):
+class PlatoonControllerABC(CommunicatingControllerABC):
     def __init__(self, steering_angle=0,
             velocity=0,
             communicate_to_arduino=True, zero_vel_offset = 0.5, vel_distance_coeff = 0.1):

@@ -19,7 +19,7 @@ class InverseController(CommunicatingControllerABC):
     @master_steering_angle.setter
     def master_steering_angle(self, val):
         self._master_steering_angle = val
-        self.ego_steering_angle = val
+        self.ego_steering_angle = -val
 
     #do nothing because this is a slave
     def set_steering_angle(self):
