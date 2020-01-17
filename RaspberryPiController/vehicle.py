@@ -70,10 +70,10 @@ class Vehicle(object):
 
     def _network_read_thread(self):
         while True:
-            logging.debug("reading")
+            # logging.debug("reading")
             self.network_reader.read()
-            time.sleep(0.5)
-            logging.debug("done sleeping")
+            # time.sleep(0.5)
+            # logging.debug("done sleeping")
 
     def start(self):
         if self.do_networking:
