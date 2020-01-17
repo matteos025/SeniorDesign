@@ -30,6 +30,7 @@ class NetworkReader(object):
     def read(self):
         try:
             data, addr = self.socket.recvfrom(1024)  # buffer size is 1024 bytes
+            return data
             # logging.debug("received message {} from address {}\n".format(data.decode(ENCODING), addr))
         except:
             self.socket.shutdown()

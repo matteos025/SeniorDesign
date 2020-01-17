@@ -2,7 +2,7 @@ import threading
 from CONSTANTS import *
 from LOCAL_CONSTANTS import *
 from NetworkCommunicator import NetworkReader, NetworkPublisher
-# from Controllers import *
+import traceback
 import Controllers.KeyboardController as KeyboardController
 import Controllers.PlatoonController as PlatoonController
 import Controllers.Dummy_Inverse_Controller as InverseController
@@ -71,7 +71,12 @@ class Vehicle(object):
     def _network_read_thread(self):
         while True:
             # logging.debug("reading")
-            self.network_reader.read()
+            message = self.network_reader.read()
+            try:
+                self.controller.receive_message(message)
+            except Exception as e:
+                logging.debug("Failed to parse message")
+                traceback.print_exc()
             # time.sleep(0.5)
             # logging.debug("done sleeping")
 
