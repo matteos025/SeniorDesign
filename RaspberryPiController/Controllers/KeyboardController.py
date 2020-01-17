@@ -1,10 +1,10 @@
-from Controllers.ControllerABC import Controller
+from Controllers.ControllerABC import ControllerABC
 import keyboard
 import numpy as np
 import logging
 
 
-class KeyboardController(Controller):
+class KeyboardController(ControllerABC):
     def set_velocity(self):
         if keyboard.is_pressed('up'):
             self.ego_velocity += 1

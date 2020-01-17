@@ -3,6 +3,7 @@ import numpy as np
 #Network Communication Constants
 ENCODING = "utf-8"
 DEFAULT_IP = '127.0.0.1'
+UDP_PORT = 5005
 
 
 CONTROL_SAMPLING_TIME = 0.1 #seconds

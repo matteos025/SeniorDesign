@@ -4,7 +4,7 @@ from CONSTANTS import *
 import time
 import logging
 
-class Controller(ABC):
+class ControllerABC(ABC):
     def __init__(
             self,
             steering_angle=0,
@@ -58,8 +58,12 @@ class Controller(ABC):
             ctr += 1
             time.sleep(CONTROL_SAMPLING_TIME)
 
+class CommunicatingControllerABC(ControllerABC, ABC):
+    @abstractmethod
+    def receive_message(self, message):
+        pass
 
-class PlatoonControllerABC(Controller, ABC):
+class PlatoonControllerABC(CommunicatingControllerABC, ControllerABC, ABC):
     def __init__(self, steering_angle=0,
             velocity=0,
             communicate_to_arduino=True, zero_vel_offset = 0.5, vel_distance_coeff = 0.1):

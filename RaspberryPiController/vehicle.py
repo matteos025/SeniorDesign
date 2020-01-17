@@ -5,6 +5,7 @@ from NetworkCommunicator import NetworkReader, NetworkPublisher
 # from Controllers import *
 import Controllers.KeyboardController as KeyboardController
 import Controllers.PlatoonController as PlatoonController
+import Controllers.Dummy_Inverse_Controller as InverseController
 import warnings
 import time
 #import cv2
@@ -17,7 +18,8 @@ import logging
 ########################################################################################################################
 #Control Scheme Constants
 CONTROL_SCHEME_DICT = {'keyboard': KeyboardController.KeyboardController,
-                       'platoon_follower': PlatoonController.PlatoonController}
+                       'platoon_follower': PlatoonController.PlatoonController,
+                       'inverse': InverseController.InverseController}
 
 class Vehicle(object):
     def __init__(self, controller_type, **kwargs):
@@ -71,6 +73,7 @@ class Vehicle(object):
             logging.debug("reading")
             self.network_reader.read()
             time.sleep(0.5)
+            logging.debug("done sleeping")
 
     def start(self):
         if self.do_networking:
@@ -79,7 +82,7 @@ class Vehicle(object):
         if self.do_control:
             self.controller.run()
         while True:
-            print("Looping")
+           pass
 
 
 
@@ -92,7 +95,7 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%Y-%m-%d:%H:%M:%S',
                         level=logging.DEBUG)
-    vehicle = Vehicle(controller_type='keyboard', do_control=DO_CONTROL, communicate_to_arduino=COMMUNICATE_TO_ARDUINO,
+    vehicle = Vehicle(controller_type=CONTROL_SCHEME, do_control=DO_CONTROL, communicate_to_arduino=COMMUNICATE_TO_ARDUINO,
                       do_networking= DO_NETWORKING, ip_to_publish=PUBLISHING_IP, ip_to_read=READING_IP)
     # vehicle = Vehicle('keyboard', do_networking= True)
     vehicle.start()

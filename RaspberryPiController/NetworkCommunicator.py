@@ -7,7 +7,7 @@ import json
 class NetworkPublisher(object):
     def __init__(self, ip_to_publish = DEFAULT_IP):
         self.UDP_IP_RECIPIENT = ip_to_publish
-        self.UDP_PORT_RECIPIENT = 5005
+        self.UDP_PORT_RECIPIENT = UDP_PORT
         self.socket = socket.socket(socket.AF_INET, # Internet
                              socket.SOCK_DGRAM) # UDP
     def send_dictionary(self, message = {'velocity': 0, 'steering_angle': 0}):
@@ -20,18 +20,12 @@ class NetworkPublisher(object):
 class NetworkReader(object):
     def __init__(self, ip_to_read = None):
         self.UDP_IP = DEFAULT_IP if ip_to_read is None else ip_to_read
-        self.UDP_PORT = 5005
+        self.UDP_PORT = UDP_PORT
 
         self.socket = socket.socket(socket.AF_INET,  # Internet
                              socket.SOCK_DGRAM)  # UDP
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.UDP_IP, self.UDP_PORT))
-
-    def run(self):
-        # TODO make this actually do more than print the message
-        while True:
-            self.read()
-            time.sleep(0.5)
 
     def read(self):
         try:
