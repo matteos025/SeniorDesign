@@ -5,8 +5,7 @@ run the command:
 sudo nano /etc/rc.local
 
 and then paste:
-cd Desktop/SeniorDesign
-git pull
+cd SeniorDesign
 pip3 install -r requirements.txt
 
 to the end of the file to enable automatic pulling of the code base
